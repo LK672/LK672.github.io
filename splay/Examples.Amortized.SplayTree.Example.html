@@ -1,0 +1,278 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Examples.Amortized.SplayTree.Example</title><link rel="stylesheet" href="Agda.css"><script type="text/javascript" src="highlight-hover.js"></script></head><body><pre class="Agda"><a id="1" class="Symbol">{-#</a> <a id="5" class="Keyword">OPTIONS</a> <a id="13" class="Pragma">--rewriting</a> <a id="25" class="Symbol">#-}</a>
+
+<a id="30" class="Keyword">module</a> <a id="37" href="Examples.Amortized.SplayTree.Example.html" class="Module">Examples.Amortized.SplayTree.Example</a> <a id="74" class="Keyword">where</a>
+
+<a id="81" class="Keyword">open</a> <a id="86" class="Keyword">import</a> <a id="93" href="Algebra.Cost.html" class="Module">Algebra.Cost</a>
+
+<a id="costMonoid"></a><a id="107" href="Examples.Amortized.SplayTree.Example.html#107" class="Function">costMonoid</a> <a id="118" class="Symbol">=</a> <a id="120" href="Algebra.Cost.Instances.html#357" class="Function">ℕ-CostMonoid</a>
+<a id="133" class="Keyword">open</a> <a id="138" href="Algebra.Cost.Bundles.html#332" class="Module">CostMonoid</a> <a id="149" href="Examples.Amortized.SplayTree.Example.html#107" class="Function">costMonoid</a> <a id="160" class="Keyword">renaming</a> <a id="169" class="Symbol">(</a><a id="170" href="Algebra.Cost.Bundles.html#428" class="Field Operator">_+_</a> <a id="174" class="Symbol">to</a> <a id="177" class="Field Operator">_⊕_</a><a id="180" class="Symbol">)</a>
+
+<a id="183" class="Keyword">open</a> <a id="188" class="Keyword">import</a> <a id="195" href="Calf.html" class="Module">Calf</a> <a id="200" href="Examples.Amortized.SplayTree.Example.html#107" class="Function">costMonoid</a> 
+<a id="212" class="Keyword">open</a> <a id="217" class="Keyword">import</a> <a id="224" href="Calf.Data.List.html" class="Module">Calf.Data.List</a> <a id="239" class="Keyword">hiding</a> <a id="246" class="Symbol">(</a><a id="247" href="Data.List.Base.html#13625" class="Function">find</a><a id="251" class="Symbol">)</a>
+<a id="253" class="Keyword">open</a> <a id="258" class="Keyword">import</a> <a id="265" href="Calf.Data.Nat.html" class="Module">Calf.Data.Nat</a> 
+<a id="280" class="Keyword">open</a> <a id="285" class="Keyword">import</a> <a id="292" href="Calf.Data.Bool.html" class="Module">Calf.Data.Bool</a> <a id="307" class="Symbol">as</a> <a id="310" class="Module">Bool</a> <a id="315" class="Keyword">using</a> <a id="321" class="Symbol">(</a><a id="322" href="Calf.Data.Bool.html#137" class="Function">bool</a><a id="326" class="Symbol">;</a> <a id="328" href="Agda.Builtin.Bool.html#198" class="InductiveConstructor">true</a><a id="332" class="Symbol">;</a> <a id="334" href="Agda.Builtin.Bool.html#192" class="InductiveConstructor">false</a><a id="339" class="Symbol">)</a>
+<a id="341" class="Keyword">open</a> <a id="346" class="Keyword">import</a> <a id="353" href="Calf.Data.Product.html" class="Module">Calf.Data.Product</a>
+
+<a id="372" class="Keyword">open</a> <a id="377" class="Keyword">import</a> <a id="384" href="Relation.Binary.PropositionalEquality.html" class="Module">Relation.Binary.PropositionalEquality</a> <a id="422" class="Symbol">as</a> <a id="425" class="Module">Eq</a> <a id="428" class="Keyword">using</a> <a id="434" class="Symbol">(</a><a id="435" href="Agda.Builtin.Equality.html#150" class="Datatype Operator">_≡_</a><a id="438" class="Symbol">;</a> <a id="440" href="Agda.Builtin.Equality.html#207" class="InductiveConstructor">refl</a><a id="444" class="Symbol">)</a>
+
+<a id="447" class="Keyword">open</a> <a id="452" class="Keyword">import</a> <a id="459" href="Examples.Amortized.SplayTree.Base.html" class="Module">Examples.Amortized.SplayTree.Base</a>
+<a id="493" class="Keyword">open</a> <a id="498" class="Keyword">import</a> <a id="505" href="Examples.Amortized.SplayTree.SplayTree.html" class="Module">Examples.Amortized.SplayTree.SplayTree</a> 
+
+<a id="546" class="Comment">{- 
+We will start with a tree that is just a left spine: 
+
+                    6
+                   /
+                  5
+                 /
+                4
+               /
+              3
+             /
+            2
+           /
+          1
+         /
+        0
+-}</a> 
+<a id="spine"></a><a id="817" href="Examples.Amortized.SplayTree.Example.html#817" class="Function">spine</a> <a id="823" class="Symbol">=</a> <a id="825" class="Number">0</a> <a id="827" href="Agda.Builtin.List.html#199" class="InductiveConstructor Operator">∷</a> <a id="829" class="Number">1</a> <a id="831" href="Agda.Builtin.List.html#199" class="InductiveConstructor Operator">∷</a> <a id="833" class="Number">2</a> <a id="835" href="Agda.Builtin.List.html#199" class="InductiveConstructor Operator">∷</a> <a id="837" class="Number">3</a> <a id="839" href="Agda.Builtin.List.html#199" class="InductiveConstructor Operator">∷</a> <a id="841" class="Number">4</a> <a id="843" href="Agda.Builtin.List.html#199" class="InductiveConstructor Operator">∷</a> <a id="845" class="Number">5</a> <a id="847" href="Agda.Builtin.List.html#199" class="InductiveConstructor Operator">∷</a> <a id="849" class="Number">6</a> <a id="851" href="Agda.Builtin.List.html#199" class="InductiveConstructor Operator">∷</a> <a id="853" href="Agda.Builtin.List.html#184" class="InductiveConstructor">[]</a>
+
+<a id="857" class="Comment">{-
+ The first splay operation accesses 0, which should rotate 0 to the root.
+-}</a>
+<a id="exampleTree₁"></a><a id="937" href="Examples.Amortized.SplayTree.Example.html#937" class="Function">exampleTree₁</a> <a id="950" class="Symbol">:</a> <a id="952" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="956" class="Symbol">(</a><a id="957" href="Calf.CBPV.html#413" class="Function">F</a> <a id="959" class="Symbol">(</a><a id="960" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="965" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="968" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="978" class="Symbol">.</a><a id="979" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="984" class="Symbol">))</a>
+<a id="987" href="Examples.Amortized.SplayTree.Example.html#937" class="Function">exampleTree₁</a> <a id="1000" class="Symbol">=</a> 
+    <a id="1007" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="1012" class="Symbol">(</a><a id="1013" href="Calf.CBPV.html#413" class="Function">F</a> <a id="1015" class="Symbol">_)</a> <a id="1018" class="Symbol">(</a><a id="1019" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="1029" class="Symbol">.</a><a id="1030" href="Examples.Amortized.SplayTree.Base.html#706" class="Field">BST.fromList</a> <a id="1043" href="Examples.Amortized.SplayTree.Example.html#817" class="Function">spine</a><a id="1048" class="Symbol">)</a> <a id="1050" class="Symbol">λ</a> <a id="1052" href="Examples.Amortized.SplayTree.Example.html#1052" class="Bound">t</a> <a id="1054" class="Symbol">→</a> 
+    <a id="1061" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="1071" class="Symbol">.</a><a id="1072" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="1081" href="Examples.Amortized.SplayTree.Example.html#1052" class="Bound">t</a> <a id="1083" class="Number">0</a>
+
+<a id="1086" class="Comment">{- 
+  Since 0 is in the tree, it should return true.
+  The resulting tree should look like this:
+                    0
+                     \
+                      5
+                     / \
+                    3   6
+                   / \
+                  1   4
+                   \
+                    2
+  The cumulative cost of this operation is 3: three double rotations.
+-}</a> 
+<a id="exampleTree₁/result"></a><a id="1467" href="Examples.Amortized.SplayTree.Example.html#1467" class="Function">exampleTree₁/result</a> <a id="1487" class="Symbol">:</a> <a id="1489" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="1493" class="Symbol">(</a><a id="1494" href="Calf.CBPV.html#413" class="Function">F</a> <a id="1496" class="Symbol">(</a><a id="1497" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="1502" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="1505" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="1515" class="Symbol">.</a><a id="1516" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="1521" class="Symbol">))</a>
+<a id="1524" href="Examples.Amortized.SplayTree.Example.html#1467" class="Function">exampleTree₁/result</a> <a id="1544" class="Symbol">=</a> 
+    <a id="1551" href="Calf.Step.html#440" class="Function">step</a> <a id="1556" class="Symbol">(</a><a id="1557" href="Calf.CBPV.html#413" class="Function">F</a> <a id="1559" class="Symbol">_)</a> <a id="1562" class="Number">3</a> <a id="1564" class="Symbol">(</a><a id="1565" href="Calf.CBPV.html#936" class="Function">ret</a> <a id="1569" class="Symbol">(</a><a id="1570" href="Agda.Builtin.Bool.html#198" class="InductiveConstructor">true</a> <a id="1575" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> 
+        <a id="1586" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+            <a id="1604" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+            <a id="1622" class="Number">0</a> 
+            <a id="1637" class="Symbol">(</a><a id="1638" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                <a id="1660" class="Symbol">(</a><a id="1661" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="1687" class="Symbol">(</a><a id="1688" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                        <a id="1718" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                        <a id="1748" class="Number">1</a> 
+                        <a id="1775" class="Symbol">(</a><a id="1776" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                            <a id="1810" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                            <a id="1844" class="Number">2</a> 
+                            <a id="1875" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                        <a id="1904" class="Symbol">)</a>
+                    <a id="1926" class="Symbol">)</a> 
+                    <a id="1949" class="Number">3</a> 
+                    <a id="1972" class="Symbol">(</a><a id="1973" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                        <a id="2003" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                        <a id="2033" class="Number">4</a> 
+                        <a id="2060" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                    <a id="2085" class="Symbol">)</a>
+                <a id="2103" class="Symbol">)</a> 
+                <a id="2122" class="Number">5</a> 
+                <a id="2141" class="Symbol">(</a><a id="2142" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="2168" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="2194" class="Number">6</a> 
+                    <a id="2217" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                <a id="2238" class="Symbol">)</a>
+            <a id="2252" class="Symbol">)</a>
+    <a id="2258" class="Symbol">))</a> 
+
+<a id="exampleTree₁/correct"></a><a id="2263" href="Examples.Amortized.SplayTree.Example.html#2263" class="Function">exampleTree₁/correct</a> <a id="2284" class="Symbol">:</a> <a id="2286" href="Examples.Amortized.SplayTree.Example.html#937" class="Function">exampleTree₁</a> <a id="2299" href="Agda.Builtin.Equality.html#150" class="Datatype Operator">≡</a> <a id="2301" href="Examples.Amortized.SplayTree.Example.html#1467" class="Function">exampleTree₁/result</a>
+<a id="2321" href="Examples.Amortized.SplayTree.Example.html#2263" class="Function">exampleTree₁/correct</a> <a id="2342" class="Symbol">=</a> <a id="2344" href="Agda.Builtin.Equality.html#207" class="InductiveConstructor">refl</a>
+
+<a id="2350" class="Comment">{- 
+  The second splay operation accesses 3, which should rotate 3 to the root.
+-}</a> 
+<a id="exampleTree₂"></a><a id="2434" href="Examples.Amortized.SplayTree.Example.html#2434" class="Function">exampleTree₂</a> <a id="2447" class="Symbol">:</a> <a id="2449" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="2453" class="Symbol">(</a><a id="2454" href="Calf.CBPV.html#413" class="Function">F</a> <a id="2456" class="Symbol">(</a><a id="2457" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="2462" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="2465" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="2475" class="Symbol">.</a><a id="2476" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="2481" class="Symbol">))</a>
+<a id="2484" href="Examples.Amortized.SplayTree.Example.html#2434" class="Function">exampleTree₂</a> <a id="2497" class="Symbol">=</a>
+    <a id="2503" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="2508" class="Symbol">(</a><a id="2509" href="Calf.CBPV.html#413" class="Function">F</a> <a id="2511" class="Symbol">_)</a> <a id="2514" class="Symbol">(</a><a id="2515" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="2525" class="Symbol">.</a><a id="2526" href="Examples.Amortized.SplayTree.Base.html#706" class="Field">BST.fromList</a> <a id="2539" href="Examples.Amortized.SplayTree.Example.html#817" class="Function">spine</a><a id="2544" class="Symbol">)</a> <a id="2546" class="Symbol">λ</a> <a id="2548" href="Examples.Amortized.SplayTree.Example.html#2548" class="Bound">t</a> <a id="2550" class="Symbol">→</a> 
+    <a id="2557" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="2562" class="Symbol">(</a><a id="2563" href="Calf.CBPV.html#413" class="Function">F</a> <a id="2565" class="Symbol">_)</a> <a id="2568" class="Symbol">(</a><a id="2569" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="2579" class="Symbol">.</a><a id="2580" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="2589" href="Examples.Amortized.SplayTree.Example.html#2548" class="Bound">t</a> <a id="2591" class="Number">0</a><a id="2592" class="Symbol">)</a> <a id="2594" class="Symbol">λ</a> <a id="2596" class="Symbol">(_</a> <a id="2599" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> <a id="2601" href="Examples.Amortized.SplayTree.Example.html#2601" class="Bound">t</a><a id="2602" class="Symbol">)</a> <a id="2604" class="Symbol">→</a>
+    <a id="2610" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="2620" class="Symbol">.</a><a id="2621" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="2630" href="Examples.Amortized.SplayTree.Example.html#2601" class="Bound">t</a> <a id="2632" class="Number">3</a>
+
+<a id="2635" class="Comment">{-
+    Since 3 is in the tree, it should return true.
+    The resulting tree should look like this:
+                      3
+                     / \
+                    /   \ 
+                   /     \
+                  0       5
+                   \     / \
+                    1   4   6
+                     \
+                      2
+    The cumulative cost of this operation is 4: one double rotation and 3 from before.
+-}</a>
+<a id="exampleTree₂/result"></a><a id="3062" href="Examples.Amortized.SplayTree.Example.html#3062" class="Function">exampleTree₂/result</a> <a id="3082" class="Symbol">:</a> <a id="3084" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="3088" class="Symbol">(</a><a id="3089" href="Calf.CBPV.html#413" class="Function">F</a> <a id="3091" class="Symbol">(</a><a id="3092" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="3097" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="3100" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="3110" class="Symbol">.</a><a id="3111" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="3116" class="Symbol">))</a>
+<a id="3119" href="Examples.Amortized.SplayTree.Example.html#3062" class="Function">exampleTree₂/result</a> <a id="3139" class="Symbol">=</a> 
+    <a id="3146" href="Calf.Step.html#440" class="Function">step</a> <a id="3151" class="Symbol">(</a><a id="3152" href="Calf.CBPV.html#413" class="Function">F</a> <a id="3154" class="Symbol">_)</a> <a id="3157" class="Number">4</a> <a id="3159" class="Symbol">(</a><a id="3160" href="Calf.CBPV.html#936" class="Function">ret</a> <a id="3164" class="Symbol">(</a><a id="3165" href="Agda.Builtin.Bool.html#198" class="InductiveConstructor">true</a> <a id="3170" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> 
+        <a id="3181" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+            <a id="3199" class="Symbol">(</a><a id="3200" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                <a id="3222" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                <a id="3244" class="Number">0</a> 
+                <a id="3263" class="Symbol">(</a><a id="3264" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="3290" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="3316" class="Number">1</a> 
+                    <a id="3339" class="Symbol">(</a><a id="3340" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                        <a id="3370" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                        <a id="3400" class="Number">2</a> 
+                        <a id="3427" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                    <a id="3452" class="Symbol">)</a>
+                <a id="3470" class="Symbol">)</a>
+            <a id="3484" class="Symbol">)</a> 
+            <a id="3499" class="Number">3</a> 
+            <a id="3514" class="Symbol">(</a><a id="3515" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                <a id="3537" class="Symbol">(</a><a id="3538" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="3564" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="3590" class="Number">4</a> 
+                    <a id="3613" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                <a id="3634" class="Symbol">)</a> 
+                <a id="3653" class="Number">5</a> 
+                <a id="3672" class="Symbol">(</a><a id="3673" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="3699" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="3725" class="Number">6</a> 
+                    <a id="3748" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                <a id="3769" class="Symbol">)</a>
+            <a id="3783" class="Symbol">)</a>
+    <a id="3789" class="Symbol">))</a>
+
+<a id="exampleTree₂/correct"></a><a id="3793" href="Examples.Amortized.SplayTree.Example.html#3793" class="Function">exampleTree₂/correct</a> <a id="3814" class="Symbol">:</a> <a id="3816" href="Examples.Amortized.SplayTree.Example.html#2434" class="Function">exampleTree₂</a> <a id="3829" href="Agda.Builtin.Equality.html#150" class="Datatype Operator">≡</a> <a id="3831" href="Examples.Amortized.SplayTree.Example.html#3062" class="Function">exampleTree₂/result</a>
+<a id="3851" href="Examples.Amortized.SplayTree.Example.html#3793" class="Function">exampleTree₂/correct</a> <a id="3872" class="Symbol">=</a> <a id="3874" href="Agda.Builtin.Equality.html#207" class="InductiveConstructor">refl</a>
+
+<a id="3880" class="Comment">{- 
+  The third splay operation accesses 7, which is not in the tree.
+-}</a>
+<a id="exampleTree₃"></a><a id="3953" href="Examples.Amortized.SplayTree.Example.html#3953" class="Function">exampleTree₃</a> <a id="3966" class="Symbol">:</a> <a id="3968" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="3972" class="Symbol">(</a><a id="3973" href="Calf.CBPV.html#413" class="Function">F</a> <a id="3975" class="Symbol">(</a><a id="3976" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="3981" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="3984" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="3994" class="Symbol">.</a><a id="3995" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="4000" class="Symbol">))</a>
+<a id="4003" href="Examples.Amortized.SplayTree.Example.html#3953" class="Function">exampleTree₃</a> <a id="4016" class="Symbol">=</a>
+    <a id="4022" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="4027" class="Symbol">(</a><a id="4028" href="Calf.CBPV.html#413" class="Function">F</a> <a id="4030" class="Symbol">_)</a> <a id="4033" class="Symbol">(</a><a id="4034" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="4044" class="Symbol">.</a><a id="4045" href="Examples.Amortized.SplayTree.Base.html#706" class="Field">BST.fromList</a> <a id="4058" href="Examples.Amortized.SplayTree.Example.html#817" class="Function">spine</a><a id="4063" class="Symbol">)</a> <a id="4065" class="Symbol">λ</a> <a id="4067" href="Examples.Amortized.SplayTree.Example.html#4067" class="Bound">t</a> <a id="4069" class="Symbol">→</a>
+    <a id="4075" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="4080" class="Symbol">(</a><a id="4081" href="Calf.CBPV.html#413" class="Function">F</a> <a id="4083" class="Symbol">_)</a> <a id="4086" class="Symbol">(</a><a id="4087" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="4097" class="Symbol">.</a><a id="4098" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="4107" href="Examples.Amortized.SplayTree.Example.html#4067" class="Bound">t</a> <a id="4109" class="Number">0</a><a id="4110" class="Symbol">)</a> <a id="4112" class="Symbol">λ</a> <a id="4114" class="Symbol">(_</a> <a id="4117" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> <a id="4119" href="Examples.Amortized.SplayTree.Example.html#4119" class="Bound">t</a><a id="4120" class="Symbol">)</a> <a id="4122" class="Symbol">→</a>
+    <a id="4128" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="4133" class="Symbol">(</a><a id="4134" href="Calf.CBPV.html#413" class="Function">F</a> <a id="4136" class="Symbol">_)</a> <a id="4139" class="Symbol">(</a><a id="4140" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="4150" class="Symbol">.</a><a id="4151" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="4160" href="Examples.Amortized.SplayTree.Example.html#4119" class="Bound">t</a> <a id="4162" class="Number">3</a><a id="4163" class="Symbol">)</a> <a id="4165" class="Symbol">λ</a> <a id="4167" class="Symbol">(_</a> <a id="4170" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> <a id="4172" href="Examples.Amortized.SplayTree.Example.html#4172" class="Bound">t</a><a id="4173" class="Symbol">)</a> <a id="4175" class="Symbol">→</a>
+    <a id="4181" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="4191" class="Symbol">.</a><a id="4192" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="4201" href="Examples.Amortized.SplayTree.Example.html#4172" class="Bound">t</a> <a id="4203" class="Number">7</a>
+
+<a id="4206" class="Comment">{-
+    Since 7 is not in the tree, it should return false.
+    The resulting tree should look unchanged from the previous operation:
+                      3
+                     / \
+                    /   \ 
+                   /     \
+                  0       5
+                   \     / \
+                    1   4   6
+                     \
+                      2
+    The cumulative cost of this operation is 4: since no rotations are performed, the cost is the same as before.
+-}</a>
+<a id="exampleTree₃/result"></a><a id="4693" href="Examples.Amortized.SplayTree.Example.html#4693" class="Function">exampleTree₃/result</a> <a id="4713" class="Symbol">:</a> <a id="4715" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="4719" class="Symbol">(</a><a id="4720" href="Calf.CBPV.html#413" class="Function">F</a> <a id="4722" class="Symbol">(</a><a id="4723" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="4728" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="4731" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="4741" class="Symbol">.</a><a id="4742" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="4747" class="Symbol">))</a>
+<a id="4750" href="Examples.Amortized.SplayTree.Example.html#4693" class="Function">exampleTree₃/result</a> <a id="4770" class="Symbol">=</a> 
+    <a id="4777" href="Calf.Step.html#440" class="Function">step</a> <a id="4782" class="Symbol">(</a><a id="4783" href="Calf.CBPV.html#413" class="Function">F</a> <a id="4785" class="Symbol">_)</a> <a id="4788" class="Number">4</a> <a id="4790" class="Symbol">(</a><a id="4791" href="Calf.CBPV.html#936" class="Function">ret</a> <a id="4795" class="Symbol">(</a><a id="4796" href="Agda.Builtin.Bool.html#192" class="InductiveConstructor">false</a> <a id="4802" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> 
+        <a id="4813" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+            <a id="4831" class="Symbol">(</a><a id="4832" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                <a id="4854" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                <a id="4876" class="Number">0</a> 
+                <a id="4895" class="Symbol">(</a><a id="4896" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="4922" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="4948" class="Number">1</a> 
+                    <a id="4971" class="Symbol">(</a><a id="4972" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                        <a id="5002" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                        <a id="5032" class="Number">2</a> 
+                        <a id="5059" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                    <a id="5084" class="Symbol">)</a>
+                <a id="5102" class="Symbol">)</a>
+            <a id="5116" class="Symbol">)</a> 
+            <a id="5131" class="Number">3</a> 
+            <a id="5146" class="Symbol">(</a><a id="5147" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                <a id="5169" class="Symbol">(</a><a id="5170" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="5196" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="5222" class="Number">4</a> 
+                    <a id="5245" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                <a id="5266" class="Symbol">)</a> 
+                <a id="5285" class="Number">5</a> 
+                <a id="5304" class="Symbol">(</a><a id="5305" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="5331" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="5357" class="Number">6</a> 
+                    <a id="5380" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                <a id="5401" class="Symbol">)</a>
+            <a id="5415" class="Symbol">)</a>
+    <a id="5421" class="Symbol">))</a>
+
+<a id="exampleTree₃/correct"></a><a id="5425" href="Examples.Amortized.SplayTree.Example.html#5425" class="Function">exampleTree₃/correct</a> <a id="5446" class="Symbol">:</a> <a id="5448" href="Examples.Amortized.SplayTree.Example.html#3953" class="Function">exampleTree₃</a> <a id="5461" href="Agda.Builtin.Equality.html#150" class="Datatype Operator">≡</a> <a id="5463" href="Examples.Amortized.SplayTree.Example.html#4693" class="Function">exampleTree₃/result</a>
+<a id="5483" href="Examples.Amortized.SplayTree.Example.html#5425" class="Function">exampleTree₃/correct</a> <a id="5504" class="Symbol">=</a> <a id="5506" href="Agda.Builtin.Equality.html#207" class="InductiveConstructor">refl</a>
+
+<a id="5512" class="Comment">{- 
+  The fourth splay operation accesses 2, which should rotate 2 to the root.
+-}</a>
+<a id="exampleTree₄"></a><a id="5595" href="Examples.Amortized.SplayTree.Example.html#5595" class="Function">exampleTree₄</a> <a id="5608" class="Symbol">:</a> <a id="5610" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="5614" class="Symbol">(</a><a id="5615" href="Calf.CBPV.html#413" class="Function">F</a> <a id="5617" class="Symbol">(</a><a id="5618" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="5623" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="5626" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="5636" class="Symbol">.</a><a id="5637" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="5642" class="Symbol">))</a>
+<a id="5645" href="Examples.Amortized.SplayTree.Example.html#5595" class="Function">exampleTree₄</a> <a id="5658" class="Symbol">=</a>
+    <a id="5664" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="5669" class="Symbol">(</a><a id="5670" href="Calf.CBPV.html#413" class="Function">F</a> <a id="5672" class="Symbol">_)</a> <a id="5675" class="Symbol">(</a><a id="5676" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="5686" class="Symbol">.</a><a id="5687" href="Examples.Amortized.SplayTree.Base.html#706" class="Field">BST.fromList</a> <a id="5700" href="Examples.Amortized.SplayTree.Example.html#817" class="Function">spine</a><a id="5705" class="Symbol">)</a> <a id="5707" class="Symbol">λ</a> <a id="5709" href="Examples.Amortized.SplayTree.Example.html#5709" class="Bound">t</a> <a id="5711" class="Symbol">→</a>
+    <a id="5717" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="5722" class="Symbol">(</a><a id="5723" href="Calf.CBPV.html#413" class="Function">F</a> <a id="5725" class="Symbol">_)</a> <a id="5728" class="Symbol">(</a><a id="5729" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="5739" class="Symbol">.</a><a id="5740" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="5749" href="Examples.Amortized.SplayTree.Example.html#5709" class="Bound">t</a> <a id="5751" class="Number">0</a><a id="5752" class="Symbol">)</a> <a id="5754" class="Symbol">λ</a> <a id="5756" class="Symbol">(_</a> <a id="5759" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> <a id="5761" href="Examples.Amortized.SplayTree.Example.html#5761" class="Bound">t</a><a id="5762" class="Symbol">)</a> <a id="5764" class="Symbol">→</a>
+    <a id="5770" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="5775" class="Symbol">(</a><a id="5776" href="Calf.CBPV.html#413" class="Function">F</a> <a id="5778" class="Symbol">_)</a> <a id="5781" class="Symbol">(</a><a id="5782" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="5792" class="Symbol">.</a><a id="5793" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="5802" href="Examples.Amortized.SplayTree.Example.html#5761" class="Bound">t</a> <a id="5804" class="Number">3</a><a id="5805" class="Symbol">)</a> <a id="5807" class="Symbol">λ</a> <a id="5809" class="Symbol">(_</a> <a id="5812" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> <a id="5814" href="Examples.Amortized.SplayTree.Example.html#5814" class="Bound">t</a><a id="5815" class="Symbol">)</a> <a id="5817" class="Symbol">→</a>
+    <a id="5823" href="Calf.CBPV.html#962" class="Function">bind</a> <a id="5828" class="Symbol">(</a><a id="5829" href="Calf.CBPV.html#413" class="Function">F</a> <a id="5831" class="Symbol">_)</a> <a id="5834" class="Symbol">(</a><a id="5835" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="5845" class="Symbol">.</a><a id="5846" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="5855" href="Examples.Amortized.SplayTree.Example.html#5814" class="Bound">t</a> <a id="5857" class="Number">7</a><a id="5858" class="Symbol">)</a> <a id="5860" class="Symbol">λ</a> <a id="5862" class="Symbol">(_</a> <a id="5865" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> <a id="5867" href="Examples.Amortized.SplayTree.Example.html#5867" class="Bound">t</a><a id="5868" class="Symbol">)</a> <a id="5870" class="Symbol">→</a>
+    <a id="5876" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="5886" class="Symbol">.</a><a id="5887" href="Examples.Amortized.SplayTree.Base.html#791" class="Field">BST.find</a> <a id="5896" href="Examples.Amortized.SplayTree.Example.html#5867" class="Bound">t</a> <a id="5898" class="Number">2</a>
+
+<a id="5901" class="Comment">{-
+    Since 2 is in the tree, it should return true.
+    The resulting tree should look like this:
+                          2
+                         / \
+                        /   \ 
+                       /     \
+                      1       3
+                     /         \
+                    0           5
+                               / \
+                              4   6
+    The cumulative cost of this operation is 6: one double rotation and one single rotation and 4 from before.
+-}</a> 
+<a id="exampleTree₄/result"></a><a id="6405" href="Examples.Amortized.SplayTree.Example.html#6405" class="Function">exampleTree₄/result</a> <a id="6425" class="Symbol">:</a> <a id="6427" href="Calf.CBPV.html#595" class="Function">cmp</a> <a id="6431" class="Symbol">(</a><a id="6432" href="Calf.CBPV.html#413" class="Function">F</a> <a id="6434" class="Symbol">(</a><a id="6435" href="Calf.Data.Bool.html#137" class="Function">bool</a> <a id="6440" href="Calf.Data.Product.html#386" class="Function Operator">×⁺</a> <a id="6443" href="Examples.Amortized.SplayTree.SplayTree.html#8172" class="Function">SplayTree</a> <a id="6453" class="Symbol">.</a><a id="6454" href="Examples.Amortized.SplayTree.Base.html#694" class="Field">BST.T</a><a id="6459" class="Symbol">))</a>
+<a id="6462" href="Examples.Amortized.SplayTree.Example.html#6405" class="Function">exampleTree₄/result</a> <a id="6482" class="Symbol">=</a>
+    <a id="6488" href="Calf.Step.html#440" class="Function">step</a> <a id="6493" class="Symbol">(</a><a id="6494" href="Calf.CBPV.html#413" class="Function">F</a> <a id="6496" class="Symbol">_)</a> <a id="6499" class="Number">6</a> <a id="6501" class="Symbol">(</a><a id="6502" href="Calf.CBPV.html#936" class="Function">ret</a> <a id="6506" class="Symbol">(</a><a id="6507" href="Agda.Builtin.Bool.html#198" class="InductiveConstructor">true</a> <a id="6512" href="Agda.Builtin.Sigma.html#235" class="InductiveConstructor Operator">,</a> 
+        <a id="6523" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+            <a id="6541" class="Symbol">(</a><a id="6542" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                <a id="6564" class="Symbol">(</a><a id="6565" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="6591" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                    <a id="6617" class="Number">0</a> 
+                    <a id="6640" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                <a id="6661" class="Symbol">)</a> 
+                <a id="6680" class="Number">1</a> 
+                <a id="6699" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+            <a id="6716" class="Symbol">)</a> 
+            <a id="6731" class="Number">2</a> 
+            <a id="6746" class="Symbol">(</a><a id="6747" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                <a id="6769" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                <a id="6791" class="Number">3</a> 
+                <a id="6810" class="Symbol">(</a><a id="6811" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                    <a id="6837" class="Symbol">(</a><a id="6838" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                        <a id="6868" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                        <a id="6898" class="Number">4</a> 
+                        <a id="6925" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                    <a id="6950" class="Symbol">)</a> 
+                    <a id="6973" class="Number">5</a> 
+                    <a id="6996" class="Symbol">(</a><a id="6997" href="Examples.Amortized.SplayTree.SplayTree.html#845" class="InductiveConstructor">node</a> 
+                        <a id="7027" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a> 
+                        <a id="7057" class="Number">6</a> 
+                        <a id="7084" href="Examples.Amortized.SplayTree.SplayTree.html#831" class="InductiveConstructor">leaf</a>
+                    <a id="7109" class="Symbol">)</a>
+                <a id="7127" class="Symbol">)</a>
+            <a id="7141" class="Symbol">)</a>
+    <a id="7147" class="Symbol">))</a>
+
+<a id="exampleTree₄/correct"></a><a id="7151" href="Examples.Amortized.SplayTree.Example.html#7151" class="Function">exampleTree₄/correct</a> <a id="7172" class="Symbol">:</a> <a id="7174" href="Examples.Amortized.SplayTree.Example.html#5595" class="Function">exampleTree₄</a> <a id="7187" href="Agda.Builtin.Equality.html#150" class="Datatype Operator">≡</a> <a id="7189" href="Examples.Amortized.SplayTree.Example.html#6405" class="Function">exampleTree₄/result</a>
+<a id="7209" href="Examples.Amortized.SplayTree.Example.html#7151" class="Function">exampleTree₄/correct</a> <a id="7230" class="Symbol">=</a> <a id="7232" href="Agda.Builtin.Equality.html#207" class="InductiveConstructor">refl</a>
+</pre></body></html>
